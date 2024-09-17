@@ -40,15 +40,16 @@ const loginUser = async (user) => {
     try {
         console.log(user.email, user.password);
         const connection = await pool.getConnection();
-        const [result] = await connection.execute('SELECT email, role, password_hash, created_at FROM users WHERE email = (?)', [user.email]);
-        if (result) {
-            console.log("result", result[0].password_hash);
+        const [result] = (await connection.execute('SELECT email, role, password_hash, created_at FROM users WHERE email = ?', [user.email]))[0];
 
-            const match = await bcrypt.compare(user.password, result[0].password_hash);
+        if (result) {
+            console.log("result", result.password_hash);
+
+            const match = await bcrypt.compare(user.password, result.password_hash);
             if (match) {
-                result[0].password_hash = undefined;
+                result.password_hash = undefined;
                 connection.release();
-                return result[0];
+                return result;
             }
         }
         connection.release();
