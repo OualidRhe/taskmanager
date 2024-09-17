@@ -22,5 +22,27 @@ const connectDB = async () => {
     }
 };
 
+const createNewUser = async (user) => {
+    try {
+        const connection = await pool.getConnection();
+        console.log('Creating new user:', user.email);
+        const [results, fields] = await connection.execute('INSERT INTO users (email, password_hash) VALUES (?, ?)', [user.email, user.password]);
+        connection.release();
+        return results.insertId;
+    } catch (err) {
+        throw err;
+    }
+}
 
-module.exports = { connectDB, pool };
+
+module.exports = { connectDB, pool, createNewUser };
+
+/*
+CREATE TABLE users (
+  id INT AUTO_INCREMENT PRIMARY KEY,              -- Unique user identifier
+  email VARCHAR(255) UNIQUE NOT NULL,             -- User's email (unique)
+  password_hash VARCHAR(255) NOT NULL,            -- Hashed password for security
+  role ENUM('user', 'admin') DEFAULT 'user',      -- User role
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  -- Account creation time
+); 
+*/
