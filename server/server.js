@@ -21,7 +21,7 @@ app.get('/', (req, res) => {
 app.post('/api/signup/', async (req, res) => {
     const user = req.body;
     const password_hash = await bcrypt.hash(user.password, saltRounds);
-
+    user.password = password_hash;
     await db.createNewUser(user).then((id) => {
         if (id >= 0) {
             return res.status(200).send('User created');
@@ -31,6 +31,21 @@ app.post('/api/signup/', async (req, res) => {
             return res.status(400).send('Email is already registered');
         }
         return res.status(500).send('Error creating user');
+    });
+
+});
+
+app.post('/api/login/', async (req, res) => {
+    const user = req.body;
+    console.log("login request", user);
+    await db.loginUser(user).then((user) => {
+        if (user != null) {
+            return res.status(200).send(user);
+        }
+        return res.status(404).send('User not found');
+    }).catch((err) => {
+
+        return res.status(500).send('Error logging in');
     });
 
 });

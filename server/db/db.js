@@ -1,4 +1,6 @@
 //mysql -u root -p
+const bcrypt = require('bcrypt');
+
 const mysql = require('mysql2/promise');
 const pool = mysql.createPool({
     host: 'localhost',
@@ -34,8 +36,34 @@ const createNewUser = async (user) => {
     }
 }
 
+const loginUser = async (user) => {
+    try {
+        console.log(user.email, user.password);
+        const connection = await pool.getConnection();
+        const [result] = await connection.execute('SELECT email, role, password_hash, created_at FROM users WHERE email = (?)', [user.email]);
+        if (result) {
+            console.log("result", result[0].password_hash);
 
-module.exports = { connectDB, pool, createNewUser };
+            const match = await bcrypt.compare(user.password, result[0].password_hash);
+            if (match) {
+                result[0].password_hash = undefined;
+                connection.release();
+                return result[0];
+            }
+        }
+        connection.release();
+        return null;
+    } catch (err) {
+        console.log(err);
+        throw err;
+    }
+}
+
+
+
+
+
+module.exports = { connectDB, pool, createNewUser, loginUser };
 
 /*
 CREATE TABLE users (

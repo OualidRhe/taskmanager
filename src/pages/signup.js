@@ -9,7 +9,7 @@ const SignupPage = () => {
     const [confirmPassword, setConfirmPassword] = useState('');
 
     function OnSubmit(e) {
-        //e.preventDefault();
+        e.preventDefault();
         if (password !== confirmPassword) {
             console.log('Passwords do not match');
             return;
